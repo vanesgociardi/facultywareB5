@@ -260,12 +260,16 @@ const exportAllExpenses = async (req, res, next) => {
 // Fitur 12: Mengembalikan data seluruh perjalanan dinas dalam format JSON
 const getAllTravelsJSON = async (req, res, next) => {
   try {
+    // Tambahkan baris ini untuk memanggil modelnya secara lokal
+    const OfficialTravel = require('../models/OfficialTravel'); 
+    
     const travels = await OfficialTravel.findAll();
     res.json(travels);
   } catch (err) {
     next(err);
   }
 };
+
 module.exports = {
   dashboard,
   listTravels,
