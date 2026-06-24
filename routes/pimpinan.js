@@ -27,5 +27,6 @@ router.get('/reports', pimpinanController.listReports);
 // Exports
 router.get('/export/travels', pimpinanController.exportAllTravels);
 router.get('/export/expenses', pimpinanController.exportAllExpenses);
+router.get('/api/travels-json', pimpinanController.getAllTravelsJSON);
 
 module.exports = router;
