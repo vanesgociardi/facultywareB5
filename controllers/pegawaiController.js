@@ -34,13 +34,18 @@ const dashboard = async (req, res, next) => {
     next(err);
   }
 };
-
 const listTravels = async (req, res, next) => {
   try {
-    const travels = await OfficialTravel.findBySubmittedBy(req.session.userId);
+    const { search = '', status = '' } = req.query;
+    const travels = await OfficialTravel.findBySubmittedBy(
+      req.session.userId,
+      search.trim(),
+      status.trim()
+    );
     res.render('pegawai/travels', {
       title: 'Daftar Perjalanan Dinas',
-      travels
+      travels,
+      query: { search, status }
     });
   } catch (err) {
     next(err);

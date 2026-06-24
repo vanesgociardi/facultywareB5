@@ -29,12 +29,26 @@ class OfficialTravel {
     return rows[0];
   }
 
-  static async findBySubmittedBy(userId) {
-    const [rows] = await db.query(`
+  static async findBySubmittedBy(userId, search = '', status = '') {
+    let sql = `
       SELECT * FROM official_travel 
       WHERE submitted_by_id = ?
-      ORDER BY created_at DESC
-    `, [userId]);
+    `;
+    const params = [userId];
+
+    if (search) {
+      sql += ` AND (destination LIKE ? OR purpose LIKE ? OR request_number LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    if (status) {
+      sql += ` AND status = ?`;
+      params.push(status);
+    }
+
+    sql += ` ORDER BY created_at DESC`;
+
+    const [rows] = await db.query(sql, params);
     return rows;
   }
 

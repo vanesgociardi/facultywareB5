@@ -1,5 +1,6 @@
 <%- include('../layouts/header') %>
 <%- include('../layouts/sidebar') %>
+<% const query = typeof locals.query !== 'undefined' ? locals.query : { search: '', status: '' } %>
 
 <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
   <div>
@@ -34,7 +35,41 @@
 </div>
 
 <!-- Table Card -->
-<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden">
+<div id="travel-table-card" data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs overflow-hidden">
+  <!-- Search & Filter Bar -->
+  <div class="p-4 border-b bg-muted/20">
+    <form method="GET" action="/pegawai/travels" class="flex flex-col sm:flex-row gap-3 w-full" hx-boost="true" hx-target="#travel-table-card" hx-select="#travel-table-card">
+      <div class="relative flex-1">
+        <span class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-muted-foreground">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+        </span>
+        <input 
+          type="text" 
+          name="search" 
+          id="search-input"
+          value="<%= query.search %>" 
+          placeholder="Cari berdasarkan tujuan, maksud, atau nomor..." 
+          class="input pl-9 w-full h-9 text-xs"
+        />
+      </div>
+      <div class="w-full sm:w-48">
+        <select name="status" id="status-filter" class="select w-full h-9 text-xs" onchange="this.form.requestSubmit()">
+          <option value="">Semua Status</option>
+          <option value="draft" <%= query.status === 'draft' ? 'selected' : '' %>>Draft</option>
+          <option value="pending" <%= query.status === 'pending' ? 'selected' : '' %>>Pending</option>
+          <option value="approved" <%= query.status === 'approved' ? 'selected' : '' %>>Approved</option>
+          <option value="rejected" <%= query.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+          <option value="completed" <%= query.status === 'completed' ? 'selected' : '' %>>Completed</option>
+        </select>
+      </div>
+      <div class="flex gap-2">
+        <button type="submit" id="search-submit" class="btn-primary h-9 text-xs px-4">Cari</button>
+        <% if (query.search || query.status) { %>
+          <a href="/pegawai/travels" id="search-reset" class="btn-outline h-9 text-xs px-4 flex items-center justify-center" hx-boost="true" hx-target="#travel-table-card" hx-select="#travel-table-card">Reset</a>
+        <% } %>
+      </div>
+    </form>
+  </div>
   <div class="overflow-x-auto">
     <table class="w-full text-sm text-left">
       <thead class="bg-muted/40 border-b text-muted-foreground text-xs uppercase font-medium">
