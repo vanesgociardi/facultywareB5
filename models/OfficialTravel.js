@@ -2,14 +2,17 @@ const db = require('../lib/db');
 
 class OfficialTravel {
   static async create(data) {
+    const status = data.status || 'draft';
     const [result] = await db.query(`
       INSERT INTO official_travel (
         request_number, purpose, destination, start_date, end_date, 
-        invitation_file, status, submitted_by, submitted_by_id, submitted_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'draft', ?, ?, CURRENT_TIMESTAMP)
+        invitation_file, status, submitted_by, submitted_by_id, submitted_at,
+        travel_outcome, outcome_followup
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, ?, ?)
     `, [
       data.request_number, data.purpose, data.destination, data.start_date, data.end_date,
-      data.invitation_file || null, data.submitted_by, data.submitted_by_id
+      data.invitation_file || null, status, data.submitted_by, data.submitted_by_id,
+      data.travel_outcome || null, data.outcome_followup || null
     ]);
     return result.insertId;
   }
@@ -102,7 +105,7 @@ class OfficialTravel {
     await db.query(`
       UPDATE official_travel 
       SET travel_outcome = ?, outcome_followup = ?, status = 'completed'
-      WHERE id = ? AND status = 'approved'
+      WHERE id = ? AND (status = 'approved' OR status = 'completed')
     `, [outcome, followup, id]);
   }
 

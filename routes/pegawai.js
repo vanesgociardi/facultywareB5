@@ -69,7 +69,10 @@ router.get('/expenses/delete/:id', pegawaiController.deleteExpense);
 // Export & Import
 router.get('/export/travels', pegawaiController.exportTravels);
 router.post('/import/travels', uploadDocs.single('importFile'), pegawaiController.importTravels);
+router.get('/export/reports', pegawaiController.exportReports);
+router.post('/import/reports', uploadDocs.single('importFile'), pegawaiController.importReports);
 router.get('/export/expenses', pegawaiController.exportExpenses);
+router.post('/import/expenses', uploadDocs.single('importFile'), pegawaiController.importExpenses);
 router.get('/travels/print/:id', pegawaiController.printTravelPDF);
 
 module.exports = router;

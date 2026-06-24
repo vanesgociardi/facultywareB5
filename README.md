@@ -85,12 +85,12 @@ Aplikasi memiliki dua jenis peran (role) utama untuk masuk ke sistem:
 
 ### Pegawai
 *   **Username**: `pegawai`
-*   **Password**: `pegawai`
+*   **Password**: `password`
 *   **Fitur**: Input/CRUD perjalanan dinas, kelola itinerary/dokumen/anggota, unggah laporan hasil perjalanan, pengajuan reimburse, ekspor/impor Excel, dan unduh PDF Surat Tugas.
 
 ### Pimpinan
 *   **Username**: `pimpinan`
-*   **Password**: `pimpinan`
+*   **Password**: `password`
 *   **Fitur**: Dashboard pemantauan statistik, persetujuan (Approve/Reject) perjalanan dinas & klaim reimburse pegawai, peninjauan laporan, dan ekspor Excel global.
 
 ---

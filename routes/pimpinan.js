@@ -1,8 +1,21 @@
 const express = require('express');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
 const pimpinanController = require('../controllers/pimpinanController');
 const { isAuthenticated } = require('../middlewares/auth');
 const { isPimpinan } = require('../middlewares/role');
+
+// Multer Config
+const docStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, path.join(__dirname, '../public/uploads/documents'));
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+const uploadDocs = multer({ storage: docStorage });
 
 // Protect all routes
 router.use(isAuthenticated, isPimpinan);
@@ -27,6 +40,8 @@ router.get('/reports', pimpinanController.listReports);
 // Exports
 router.get('/export/travels', pimpinanController.exportAllTravels);
 router.get('/export/expenses', pimpinanController.exportAllExpenses);
+router.get('/export/reports', pimpinanController.exportAllReports);
 router.get('/api/travels-json', pimpinanController.getAllTravelsJSON);
+router.post('/import/travels', uploadDocs.single('importFile'), pimpinanController.importAllTravels);
 
 module.exports = router;

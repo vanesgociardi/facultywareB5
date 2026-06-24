@@ -2,6 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const xlsx = require('xlsx');
 const PDFDocument = require('pdfkit');
+const db = require('../lib/db');
 const OfficialTravel = require('../models/OfficialTravel');
 const TravelItinerary = require('../models/TravelItinerary');
 const TravelDocument = require('../models/TravelDocument');
@@ -359,8 +360,8 @@ const saveOutcome = async (req, res, next) => {
       return res.redirect('/pegawai/travels');
     }
 
-    if (travel.status !== 'approved') {
-      req.session.error = 'Laporan hanya bisa diisi jika perjalanan sudah disetujui (Approved).';
+    if (travel.status !== 'approved' && travel.status !== 'completed') {
+      req.session.error = 'Laporan hanya bisa diisi jika perjalanan sudah disetujui atau selesai.';
       return res.redirect(`/pegawai/travels/detail/${id}`);
     }
 
@@ -507,9 +508,7 @@ const exportTravels = async (req, res, next) => {
       'Status': t.status.toUpperCase(),
       'Diajukan Tanggal': t.submitted_at ? new Date(t.submitted_at).toLocaleDateString() : '',
       'Disetujui Oleh': t.approved_by || '-',
-      'Disetujui Tanggal': t.approved_at ? new Date(t.approved_at).toLocaleDateString() : '-',
-      'Hasil Perjalanan': t.travel_outcome || '-',
-      'Rencana Tindak Lanjut': t.outcome_followup || '-'
+      'Disetujui Tanggal': t.approved_at ? new Date(t.approved_at).toLocaleDateString() : '-'
     }));
 
     const worksheet = xlsx.utils.json_to_sheet(data);
@@ -542,8 +541,8 @@ const importTravels = async (req, res, next) => {
     let count = 0;
     for (const row of rows) {
       // Parse dates safely
-      let start_date = row['Tanggal Mulai'];
-      let end_date = row['Tanggal Selesai'];
+      let start_date = row['Tanggal Mulai'] || row['Start Date'];
+      let end_date = row['Tanggal Selesai'] || row['End Date'];
       const purpose = row['Keperluan / Tujuan'] || row['Purpose'] || 'Impor Perjalanan';
       const destination = row['Tujuan Destinasi'] || row['Destination'] || 'Impor';
 
@@ -560,6 +559,9 @@ const importTravels = async (req, res, next) => {
         start_date: new Date(start_date).toISOString().slice(0, 10),
         end_date: new Date(end_date).toISOString().slice(0, 10),
         invitation_file: null,
+        status: 'draft',
+        travel_outcome: null,
+        outcome_followup: null,
         submitted_by: req.session.employeeId || req.session.userId,
         submitted_by_id: req.session.userId
       });
@@ -570,6 +572,75 @@ const importTravels = async (req, res, next) => {
     if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
 
     req.session.success = `Berhasil mengimpor ${count} data perjalanan dinas dari Excel.`;
+    res.redirect('/pegawai/travels');
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Export Reports list to Excel
+const exportReports = async (req, res, next) => {
+  try {
+    const travels = await OfficialTravel.findBySubmittedBy(req.session.userId);
+    const completedTravels = travels.filter(t => t.status === 'completed' || t.travel_outcome);
+    const data = completedTravels.map(t => ({
+      'Nomor Permohonan': t.request_number,
+      'Keperluan / Tujuan': t.purpose,
+      'Tujuan Destinasi': t.destination,
+      'Hasil Perjalanan': t.travel_outcome || '',
+      'Rencana Tindak Lanjut': t.outcome_followup || ''
+    }));
+
+    const worksheet = xlsx.utils.json_to_sheet(data);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'Laporan Perjalanan');
+
+    const buffer = xlsx.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+    res.setHeader('Content-Disposition', 'attachment; filename=laporan-perjalanan-pegawai.xlsx');
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Import Reports from Excel
+const importReports = async (req, res, next) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      req.session.error = 'File Excel tidak ditemukan.';
+      return res.redirect('/pegawai/travels');
+    }
+
+    const workbook = xlsx.readFile(file.path);
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const rows = xlsx.utils.sheet_to_json(worksheet);
+
+    let count = 0;
+    for (const row of rows) {
+      const requestNumber = row['Nomor Permohonan'] || row['Request Number'];
+      const travel_outcome = row['Hasil Perjalanan'] || row['Outcome'];
+      const outcome_followup = row['Rencana Tindak Lanjut'] || row['Followup'] || '';
+
+      if (!requestNumber || !travel_outcome) continue;
+
+      const travelList = await OfficialTravel.findBySubmittedBy(req.session.userId);
+      const matchedTravel = travelList.find(
+        t => t.request_number === requestNumber.trim() && (t.status === 'approved' || t.status === 'completed')
+      );
+
+      if (!matchedTravel) continue;
+
+      await OfficialTravel.updateOutcome(matchedTravel.id, travel_outcome, outcome_followup);
+      count++;
+    }
+
+    // Delete temp file
+    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+
+    req.session.success = `Berhasil mengimpor ${count} laporan perjalanan dari Excel.`;
     res.redirect('/pegawai/travels');
   } catch (err) {
     next(err);
@@ -597,6 +668,77 @@ const exportExpenses = async (req, res, next) => {
     res.setHeader('Content-Disposition', 'attachment; filename=reimburse-pegawai.xlsx');
     res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     res.send(buffer);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Import Expenses from Excel
+const importExpenses = async (req, res, next) => {
+  try {
+    const file = req.file;
+    if (!file) {
+      req.session.error = 'File Excel tidak ditemukan.';
+      return res.redirect('/pegawai/expenses');
+    }
+
+    const workbook = xlsx.readFile(file.path);
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    const rows = xlsx.utils.sheet_to_json(worksheet);
+
+    const costComponents = await TravelCostComponent.findAll();
+
+    let count = 0;
+    for (const row of rows) {
+      const requestNumber = row['Nomor Permohonan'] || row['Request Number'];
+      const componentInput = row['Komponen Biaya'] || row['Cost Component'];
+      const amount = row['Jumlah'] || row['Amount'];
+      const description = row['Keterangan'] || row['Description'] || '';
+
+      if (!requestNumber || !componentInput || !amount) continue;
+
+      // 1. Look up Travel by request number and user ID
+      const [travelRows] = await db.query(
+        'SELECT id FROM official_travel WHERE request_number = ? AND submitted_by_id = ?',
+        [requestNumber.trim(), req.session.userId]
+      );
+      if (travelRows.length === 0) continue;
+
+      const official_travel_id = travelRows[0].id;
+
+      // 2. Find matching cost component
+      const componentStr = componentInput.toString().trim().toLowerCase();
+      let matchedComponent = costComponents.find(
+        c => c.name.toLowerCase() === componentStr || c.code.toLowerCase() === componentStr
+      );
+
+      if (!matchedComponent) {
+        matchedComponent = costComponents.find(
+          c => c.name.toLowerCase().includes(componentStr) || c.code.toLowerCase().includes(componentStr)
+        );
+      }
+
+      const travel_cost_component_id = matchedComponent ? matchedComponent.id : (costComponents[0] ? costComponents[0].id : 1);
+
+      // 3. Create Travel Expense
+      await TravelExpense.create({
+        official_travel_id,
+        employee_id: req.session.employeeId || req.session.userId,
+        travel_cost_component_id,
+        amount: parseFloat(amount),
+        description: description === '-' ? null : description,
+        receipt_file: null
+      });
+
+      count++;
+    }
+
+    // Delete temp file
+    if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+
+    req.session.success = `Berhasil mengimpor ${count} klaim reimburse dari Excel.`;
+    res.redirect('/pegawai/expenses');
   } catch (err) {
     next(err);
   }
@@ -685,6 +827,9 @@ module.exports = {
   deleteExpense,
   exportTravels,
   importTravels,
+  exportReports,
+  importReports,
   exportExpenses,
+  importExpenses,
   printTravelPDF
 };
