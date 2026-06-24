@@ -68,4 +68,12 @@ module.exports = defineConfig({
 
   /* Output directory for test artifacts */
   outputDir: 'test-results/',
+
+  /* Run local web server before starting the tests */
+  webServer: {
+    command: 'npm start',
+    url: 'http://localhost:3000',
+    reuseExistingServer: true,
+    timeout: 15 * 1000
+  }
 });

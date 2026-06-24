@@ -12,26 +12,53 @@
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
       <span>Tambah Permohonan</span>
     </a>
-    <a href="/pegawai/export/travels" class="btn-outline flex items-center gap-1.5">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-      <span>Export Excel</span>
-    </a>
   </div>
 </div>
 
-<!-- Import Excel Card -->
-<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 mb-6">
-  <h3 class="font-semibold text-sm mb-2">Import Permohonan dari Excel</h3>
-  <form action="/pegawai/import/travels" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-end gap-3">
-    <div class="grid w-full max-w-sm gap-1.5">
-      <label for="importFile" class="text-xs text-muted-foreground">Pilih File Excel (.xlsx)</label>
-      <input type="file" name="importFile" id="importFile" accept=".xlsx" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs file:border-0 file:bg-transparent file:text-xs file:font-medium text-foreground" />
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+  <!-- Card 1: Manage Travel Requests (Permohonan) -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 flex flex-col justify-between">
+    <div>
+      <h3 class="font-semibold text-sm mb-1">Permohonan Perjalanan Dinas</h3>
+      <p class="text-xs text-muted-foreground mb-4">Ekspor daftar permohonan atau impor permohonan baru dari file Excel.</p>
+      
+      <form action="/pegawai/import/travels" method="POST" enctype="multipart/form-data" class="space-y-3">
+        <div class="flex flex-col gap-1">
+          <label for="importFileTravels" class="text-xs font-medium">Pilih File Excel (.xlsx)</label>
+          <input type="file" name="importFile" id="importFileTravels" accept=".xlsx" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs file:border-0 file:bg-transparent file:text-xs file:font-medium text-foreground" />
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="btn-secondary btn-sm flex-1">Import Permohonan</button>
+          <a href="/pegawai/export/travels" class="btn-secondary btn-sm flex-1 flex items-center justify-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span>Export Excel</span>
+          </a>
+        </div>
+      </form>
     </div>
-    <button type="submit" class="btn-secondary h-9">
-      <span>Import</span>
-    </button>
-    <a href="/assets/templates/template-travel-import.xlsx" class="text-xs text-primary underline mb-2 ml-auto" style="display:none;">Download Template</a>
-  </form>
+  </div>
+
+  <!-- Card 2: Manage Travel Reports (Laporan) -->
+  <div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 flex flex-col justify-between">
+    <div>
+      <h3 class="font-semibold text-sm mb-1">Laporan Hasil Perjalanan</h3>
+      <p class="text-xs text-muted-foreground mb-4">Ekspor data laporan hasil perjalanan atau impor laporan dari file Excel.</p>
+      
+      <form action="/pegawai/import/reports" method="POST" enctype="multipart/form-data" class="space-y-3">
+        <div class="flex flex-col gap-1">
+          <label for="importFileReports" class="text-xs font-medium">Pilih File Excel (.xlsx)</label>
+          <input type="file" name="importFile" id="importFileReports" accept=".xlsx" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs file:border-0 file:bg-transparent file:text-xs file:font-medium text-foreground" />
+        </div>
+        <div class="flex gap-2">
+          <button type="submit" class="btn-secondary btn-sm flex-1">Import Laporan</button>
+          <a href="/pegawai/export/reports" class="btn-secondary btn-sm flex-1 flex items-center justify-center gap-1">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
+            <span>Export Excel</span>
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Table Card -->

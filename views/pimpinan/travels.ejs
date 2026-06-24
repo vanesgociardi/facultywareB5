@@ -7,11 +7,25 @@
     <p class="text-sm text-muted-foreground">Lihat dan verifikasi permohonan perjalanan dinas dosen dan pegawai.</p>
   </div>
   <div class="flex gap-2">
-    <a href="/pimpinan/export/travels" class="btn-outline flex items-center gap-1.5">
+    <a href="/pimpinan/export/travels" class="btn-secondary flex items-center gap-1.5">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></svg>
-      <span>Export Semua Excel</span>
+      <span>Export Permohonan Excel</span>
     </a>
   </div>
+</div>
+
+<!-- Import Excel Card -->
+<div data-slot="card" class="rounded-xl border bg-card text-card-foreground shadow-xs p-6 mb-6">
+  <h3 class="font-semibold text-sm mb-2">Import Permohonan Seluruh Pegawai dari Excel</h3>
+  <form action="/pimpinan/import/travels" method="POST" enctype="multipart/form-data" class="flex flex-col md:flex-row items-end gap-3">
+    <div class="grid w-full max-w-sm gap-1.5">
+      <label for="importFile" class="text-xs text-muted-foreground">Pilih File Excel (.xlsx)</label>
+      <input type="file" name="importFile" id="importFile" accept=".xlsx" required class="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-xs shadow-xs file:border-0 file:bg-transparent file:text-xs file:font-medium text-foreground" />
+    </div>
+    <button type="submit" class="btn-secondary h-9">
+      <span>Import</span>
+    </button>
+  </form>
 </div>
 
 <!-- Table Card -->
