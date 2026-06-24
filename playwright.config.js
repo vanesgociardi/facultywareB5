@@ -17,8 +17,8 @@ module.exports = defineConfig({
   /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
   
-  /* Opt out of parallel tests on CI */
-  workers: process.env.CI ? 1 : undefined,
+  /* Opt out of parallel tests to avoid database and session conflicts */
+  workers: 1,
   
   /* Reporter to use */
   reporter: [
