@@ -25,8 +25,8 @@ async function login(page, role = 'pegawai') {
   await page.fill(SELECTORS.login.passwordInput, user.password);
   await page.click(SELECTORS.login.submitButton);
   
-  // Wait for redirect to dashboard
-  await page.waitForURL(`**${user.expectedDashboardURL}`, { timeout: 15000 });
+  // Wait for redirect to dashboard (allow up to 30s for slow DB connections at cold start)
+  await page.waitForURL(`**${user.expectedDashboardURL}`, { timeout: 30000 });
 }
 
 /**

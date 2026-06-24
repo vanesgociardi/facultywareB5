@@ -1,28 +1,27 @@
-# FacultyWare - Sistem Perjalanan Dinas Fakultas
+# FacultyWare — Sistem Perjalanan Dinas Fakultas
 
-FacultyWare adalah aplikasi web berbasis Node.js, Express.js, MySQL, dan EJS yang dirancang untuk mengelola permohonan perjalanan dinas fakultas secara efisien dan transparan. Aplikasi ini memiliki alur kerja pengajuan perjalanan dinas, manajemen jadwal (itinerary), anggota perjalanan, unggah berkas surat tugas, penulisan laporan hasil perjalanan, hingga pengajuan reimburse biaya perjalanan.
+FacultyWare adalah aplikasi web berbasis Node.js, Express.js, MySQL, dan EJS yang dirancang untuk mengelola permohonan perjalanan dinas fakultas secara efisien dan transparan. Aplikasi ini memiliki alur kerja lengkap mulai dari pengajuan perjalanan dinas, manajemen jadwal (itinerary), anggota perjalanan, unggah berkas surat tugas, penulisan laporan hasil perjalanan (outcome), hingga pengajuan reimburse biaya perjalanan dinas.
 
 ---
 
 ## 1. Tech Stack
 
-- **Backend**: Node.js & Express.js
-- **Database**: MySQL (menggunakan driver `mysql2` untuk query SQL mentah langsung tanpa ORM)
-- **Tampilan (View Engine)**: EJS
-- **Desain & Gaya (Styling)**: Tailwind CSS (diintegrasikan melalui library UI Basecoat)
-- **Interaktivitas**: Vanilla JS & HTMX
-- **Manajemen Sesi**: `express-session` & `express-mysql-session`
-- **Enkripsi Sandi**: `bcryptjs`
-- **Unggah Berkas**: `multer`
-- **Ekspor Dokumen PDF**: `pdfkit`
-- **Ekspor/Impor Excel**: `xlsx`
+*   **Backend**: Node.js & Express.js
+*   **Database**: MySQL (menggunakan query SQL mentah melalui driver `mysql2` tanpa ORM)
+*   **View Engine**: EJS (Embedded JavaScript templates)
+*   **Styling**: Tailwind CSS & Basecoat UI Library
+*   **Interaktivitas**: Vanilla JavaScript & HTMX (untuk pembaruan parsial dinamis)
+*   **Autentikasi & Sesi**: `express-session` & `express-mysql-session`
+*   **Keamanan**: Enkripsi password menggunakan `bcryptjs`
+*   **Unggah Berkas**: `multer`
+*   **Ekspor Dokumen**: PDFKit (PDF) & SheetJS/xlsx (Excel)
 
 ---
 
-## 2. Cara Install & Konfigurasi
+## 2. Cara Instalasi & Konfigurasi
 
-### Langkah 1: Kloning & Masuk ke Folder Project
-Pastikan Node.js telah terinstal pada sistem Anda.
+### Langkah 1: Kloning & Install Dependencies
+Pastikan Node.js dan npm telah terinstal di komputer Anda. Jalankan perintah berikut di terminal:
 ```bash
 npm install
 ```
@@ -32,87 +31,109 @@ Salin file `.env.example` menjadi `.env` di direktori utama:
 ```bash
 cp .env.example .env
 ```
-Sesuaikan nilai konfigurasi database sesuai dengan server MySQL lokal Anda:
+Sesuaikan konfigurasi database sesuai dengan server MySQL lokal Anda:
 ```env
 PORT=3000
 DB_HOST=127.0.0.1
 DB_USER=root
 DB_PASSWORD=
-DB_NAME=tbb5_pweb
+DB_NAME=tb_b5
 DB_PORT=3306
 SESSION_SECRET=facultyware_secret
 ```
 
----
+### Langkah 3: Inisialisasi Database
+Buat database baru di server MySQL Anda dengan nama sesuai konfigurasi `.env` (misal: `tb_b5`). Impor file dump SQL database Anda ke dalamnya.
 
-## 3. Cara Menyiapkan Database
-
-Aplikasi ini menggunakan database yang sudah ada. Jika Anda perlu memulihkan atau memindahkannya, buat database baru dengan nama `tbb5_pweb` (atau sesuai konfigurasi `.env` Anda), dan impor file database dosen yang telah disediakan ke dalam server MySQL Anda.
-
-Untuk pengembangan lokal, jika tabel relasi pendukung perjalanan belum dibuat di database, jalankan script inisialisasi lokal berikut:
+Jalankan script inisialisasi lokal untuk membuat tabel relasi pendukung perjalanan dinas jika belum tersedia:
 ```bash
 node scripts/create_local_tables.js
 ```
-Script tersebut akan memverifikasi dan membuat tabel-tabel berikut jika belum tersedia:
-- `travel_cost_components` (dan mengisi komponen bawaan seperti tiket, hotel, dll)
-- `travel_expenses`
-- `official_travel_documents`
-- `official_travel_itineraries`
-- `official_travel_members`
 
 ---
 
-## 4. Cara Menjalankan Aplikasi
+## 3. Cara Menjalankan Aplikasi
 
-Jalankan perintah berikut untuk menjalankan server dalam mode pengembangan:
+### Mode Pengembangan (Development)
+Untuk menjalankan server dengan auto-reload menggunakan `nodemon`:
 ```bash
 npm run dev
 ```
 Aplikasi akan aktif di alamat: [http://localhost:3000](http://localhost:3000).
 
----
+### Mode Produksi (Production)
+Untuk menjalankan aplikasi dalam mode produksi:
+```bash
+npm start
+```
 
-## 5. Akun Demo & Peran (Role)
+### Pengujian E2E (Playwright)
+Untuk menjalankan pengetesan E2E otomatis:
+```bash
+# Jalankan seluruh rangkaian test suite
+npx playwright test --project=chromium
 
-Aplikasi memiliki dua jenis peran (role) utama:
-
-### 1. Pegawai
-- **Username**: `pegawai`
-- **Password**: `pegawai` (atau password bawaan dari database)
-- **Hak Akses**:
-  - Melihat dashboard statistik pribadi.
-  - CRUD permohonan perjalanan dinas (saat status Draft/Pending).
-  - Mengelola jadwal perjalanan (itinerary) & berkas dokumen pendukung.
-  - Menambahkan anggota delegasi perjalanan dinas.
-  - Melaporkan hasil perjalanan (outcome & tindak lanjut) setelah disetujui.
-  - Mengajukan reimburse/klaim pengeluaran perjalanan dinas & mengunggah bukti nota kwitansi.
-  - Mengekspor data perjalanan/reimburse ke Excel.
-  - Mengimpor draf perjalanan dari Excel.
-  - Mengunduh cetakan PDF Surat Tugas Perjalanan Dinas.
-
-### 2. Pimpinan
-- **Username**: `pimpinan`
-- **Password**: `pimpinan` (atau password bawaan dari database)
-- **Hak Akses**:
-  - Melihat dashboard statistik semua perjalanan dinas & klaim pending.
-  - Melihat & memproses persetujuan (Approve/Reject dengan alasan catatan) permohonan perjalanan dinas pegawai.
-  - Melihat & memproses persetujuan klaim reimburse pengeluaran pegawai.
-  - Meninjau laporan hasil perjalanan dinas yang telah diselesaikan.
-  - Mengekspor semua data perjalanan dinas dan reimburse ke Excel secara global.
+# Jalankan test suite dengan UI interaktif
+npx playwright test --ui
+```
 
 ---
 
-## 6. Daftar Fitur Lengkap
+## 4. Akun Demo & Peran (Role)
 
-1. **Autentikasi & Sesi**: Fitur masuk menggunakan username atau email, didukung dengan enkripsi password `bcryptjs` dan persistent sessions di database MySQL.
-2. **Dashboard Statistik**: Tampilan informatif berupa statistik jumlah permohonan perjalanan berdasarkan status (Draft, Pending, Approved, Rejected, Completed) dan total dana reimburse.
-3. **Sub-Modul Detail Perjalanan**:
-   - **Upload Berkas**: Integrasi pengunggahan berkas menggunakan `multer`.
-   - **Itinerary**: Manajemen jadwal rinci hari demi hari.
-   - **Anggota**: Manajemen tim delegasi dan unggah laporan ringkas tiap anggota.
-4. **Alur Laporan Akhir**: Status perjalanan dinas otomatis berubah menjadi `Completed` ketika pegawai mengunggah laporan hasil perjalanan dinas.
-5. **Manajemen Reimburse**: Pengajuan klaim kwitansi pengeluaran yang terkelompok berdasarkan jenis komponen biaya (`travel_cost_components`).
-6. **Ekspor PDF & Impor/Ekspor Excel**: Pembuatan dokumen PDF Surat Tugas menggunakan `pdfkit`, serta integrasi file Excel menggunakan `xlsx`.
-7. **REST API JSON**: Endpoint API khusus untuk pengaksesan data secara eksternal:
-   - Pegawai: `GET /api/my-travel`, `GET /api/my-expenses`, `GET /api/my-documents`
-   - Pimpinan: `GET /api/travel`, `GET /api/travel/:id`, `GET /api/expenses`, `GET /api/reports`
+Aplikasi memiliki dua jenis peran (role) utama untuk masuk ke sistem:
+
+### Pegawai
+*   **Username**: `pegawai`
+*   **Password**: `pegawai`
+*   **Fitur**: Input/CRUD perjalanan dinas, kelola itinerary/dokumen/anggota, unggah laporan hasil perjalanan, pengajuan reimburse, ekspor/impor Excel, dan unduh PDF Surat Tugas.
+
+### Pimpinan
+*   **Username**: `pimpinan`
+*   **Password**: `pimpinan`
+*   **Fitur**: Dashboard pemantauan statistik, persetujuan (Approve/Reject) perjalanan dinas & klaim reimburse pegawai, peninjauan laporan, dan ekspor Excel global.
+
+---
+
+## Pembagian Tugas Anggota
+
+### 1. Vanesa Gociardi
+
+**Modul Perjalanan Dinas Pegawai**
+
+* Pengembangan fitur pengajuan perjalanan dinas.
+* Pengelolaan data perjalanan dinas pegawai.
+* Menampilkan status pengajuan perjalanan.
+* Pengelolaan hasil perjalanan dan rencana tindak lanjut.
+* Integrasi modul pegawai dengan database.
+* Deployment aplikasi dan dokumentasi proyek.
+
+### 2. Farrah Aulia
+
+**Modul Reimburse Perjalanan Dinas**
+
+* Pengembangan fitur pengajuan reimburse.
+* Pengelolaan komponen biaya perjalanan.
+* Upload bukti pembayaran dan kwitansi.
+* Pengelolaan data pengeluaran perjalanan dinas.
+* Export data reimburse.
+
+### 3. Fadel
+
+**Modul Dokumen, Itinerary, dan Anggota Perjalanan**
+
+* Pengelolaan itinerary perjalanan dinas.
+* Pengelolaan anggota/delegasi perjalanan.
+* Upload dan manajemen dokumen pendukung.
+* Integrasi dokumen dengan data perjalanan dinas.
+* Validasi data perjalanan.
+
+### 4. Zaki
+
+**Modul Persetujuan dan Dashboard Pimpinan**
+
+* Pengembangan dashboard pimpinan.
+* Persetujuan (Approve/Reject) perjalanan dinas.
+* Persetujuan pengajuan reimburse.
+* Monitoring seluruh data perjalanan dinas.
+* Rekapitulasi dan pelaporan data perjalanan.
